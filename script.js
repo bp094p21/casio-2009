@@ -31,8 +31,8 @@ let outputDisplay = document.querySelector('.output-display');
 
 ////////////                 ////////////
 ////////////                 ////////////
-////////////     ON BTN      ////////////
-////////////     ON BTN      ////////////
+////////////  POWER BTN      ////////////
+////////////  POWER BTN      ////////////
 ////////////                 ////////////
 ////////////                 ////////////
 // get reference to on button
@@ -46,9 +46,6 @@ console.log(powerBtn);
 ////////////                 ////////////
 ////////////                 ////////////
 let shiftBtn = document.querySelector('.shift-btn');
-// shiftBtn.addEventListener("click", () => {
-//     calculator.classList.toggle("calculator-zoom");
-// });
 
 ////////////                 ////////////
 ////////////                 ////////////
@@ -234,10 +231,6 @@ let numberButtons = {
 }
 // turn number buttons into array
 let numberButtonsArr = Object.values(numberButtons);
-// add event listeners to each number button and CALL the displayInput function
-// numberButtonsArr.forEach((obj) => {
-//     obj.addEventListener("click", displayInput);
-// })
 
 /////////////                  //////////////
 /////////////                  //////////////
@@ -263,7 +256,7 @@ let opButtons = {
 // }
 
 
-powerBtn.addEventListener("click", addEventListeners);
+powerBtn.addEventListener("click", togglePower);
 /////////////                  //////////////
 /////////////                  //////////////
 /////////////    FUNCTIONS     //////////////
@@ -434,26 +427,97 @@ function addLabels(obj) {
     }
 }
 
-function addEventListeners() {
-    // assign event listner to shift button
-    shiftBtn.addEventListener("click", () => {
-        calculator.classList.toggle("calculator-zoom");
-    });
-    // assign event listneres to each number button
-    numberButtonsArr.forEach((obj) => {
-        obj.addEventListener("click", displayInput);
-    });
-    // assign event listeners to each operator button
-    for (obj of Object.values(opButtons)) {
-        obj.addEventListener("click", operate);
-    }
-    // assign event listeners to each black button
-    for (i=0;i<blackBtnGrid.buttons.length;i++) {
-        blackBtnGrid.buttons[i].addEventListener("click", displayWord);
-    }
-    // display 0 on output display
-    outputDisplay.textContent = 0;
-    // turn display on
-    displayScreen.classList.toggle("display-screen-on");
+function togglePower() {
     
+    if (!powerBtn.hasAttribute("value")) {
+        // assign event listener to shift button
+        shiftBtn.addEventListener("click", toggleZoom);
+        // assign event listeners to each number button
+        numberButtonsArr.forEach((obj) => {
+            // play Sound
+            obj.addEventListener("click", playSoundNum)
+            // displayInput
+            obj.addEventListener("click", displayInput);
+        });
+        // assign event listeners to each operator button
+        for (obj of Object.values(opButtons)) {
+            // play Sound
+            console.log(obj.value);
+            if (obj.value != "DEL" && obj.value != "AC") {
+                obj.addEventListener("click", playSoundOp)
+            }
+            // operate
+            obj.addEventListener("click", operate);
+        }
+        // assign event listeners to each black button
+        for (i=0;i<blackBtnGrid.buttons.length;i++) {
+            blackBtnGrid.buttons[i].addEventListener("click", displayWord);
+        }
+        // display 0 on output display
+        outputDisplay.textContent = 0;
+        // turn display on
+        displayScreen.classList.toggle("display-screen-on");
+        // assign value to powerBtn
+        powerBtn.setAttribute("value", "on");
+        // play sound
+        const audio = document.querySelector(`audio[name="on"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.play();
+    } else {
+        // remove event listener to shift button
+        shiftBtn.removeEventListener("click", toggleZoom);
+        // remove event listeners to each number button
+        numberButtonsArr.forEach((obj) => {
+            obj.removeEventListener("click", displayInput);
+        });
+        // remove event listeners to each operator button
+        for (obj of Object.values(opButtons)) {
+            obj.removeEventListener("click", operate);
+        }
+        // remove event listeners to each black button
+        for (i=0;i<blackBtnGrid.buttons.length;i++) {
+            blackBtnGrid.buttons[i].removeEventListener("click", displayWord);
+        }
+        // clear userInput
+        userInput = [];
+        // display nothing on input display
+        inputDisplay.textContent = null;
+        // display nothing on output display
+        outputDisplay.textContent = null;
+        // turn display off
+        displayScreen.classList.toggle("display-screen-on");
+        // remove value from powerBtn
+        powerBtn.removeAttribute("value");
+        // play sound
+        const audio = document.querySelector(`audio[name="off2"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.play();
+    }
+}
+
+// remove event listener to shift button
+function toggleZoom() {
+    calculator.classList.toggle("calculator-zoom");
+}
+
+window.addEventListener('click', playSound);
+function playSound(e) {
+    const audio = document.querySelector(`audio[name="${e.target.value}"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+  }
+
+function playSoundNum(e) {
+    const audio = document.querySelector(`audio[name="num"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+
+function playSoundOp(e) {
+    const audio = document.querySelector(`audio[name="op"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
 }
