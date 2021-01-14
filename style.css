@@ -160,7 +160,7 @@ h1 {
 
     transition: transform 2s cubic-bezier(.09,1.26,.28,1.06);
 }
-.h1-transform {
+.h1-rotate {
     transform: rotate(180deg);
 }
 
@@ -189,7 +189,7 @@ h1 {
 .calculator-rotate {
     transform: rotate(900deg);
 }
-.calculator-flip {
+.calculator-vanish {
     transform: rotateX(630deg);
 }
 .calculator-zoom{

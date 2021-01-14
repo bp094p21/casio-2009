@@ -1,59 +1,14 @@
-////////////                 ////////////
-////////////                 ////////////
-////////////     H1          ////////////
-////////////     H1          ////////////
-////////////                 ////////////
-////////////                 ////////////
-let h1 = document.querySelector('h1')
-console.log(h1);
+// Query Elements
+let h1 = document.querySelector('h1'),
+    calculator = document.querySelector('.calculator'),
+    displayScreen = document.querySelector('.display-screen'),
+    inputDisplay = document.querySelector('.input-display'),
+    outputDisplay = document.querySelector('.output-display'),
+    shiftBtn = document.querySelector('.shift-btn'),
+    powerBtn = document.querySelector('.power-btn');
 
-////////////                 ////////////
-////////////                 ////////////
-////////////   CALCULATOR    ////////////
-////////////   CALCULATOR    ////////////
-////////////                 ////////////
-////////////                 ////////////
-let calculator = document.querySelector('.calculator')
-console.log(calculator);
-
-////////////                 ////////////
-////////////                 ////////////
-////////////     DISPLAY     ////////////
-////////////     DISPLAY     ////////////
-////////////                 ////////////
-////////////                 ////////////
-// store the user input in a variable somewhere
-let userInput = [];
-// get reference to display screen, input display and output display
-let displayScreen = document.querySelector('.display-screen');
-let inputDisplay = document.querySelector('.input-display');
-let outputDisplay = document.querySelector('.output-display');
-
-////////////                 ////////////
-////////////                 ////////////
-////////////  POWER BTN      ////////////
-////////////  POWER BTN      ////////////
-////////////                 ////////////
-////////////                 ////////////
-// get reference to on button
-let powerBtn = document.querySelector('.power-btn');
-console.log(powerBtn);
-
-////////////                 ////////////
-////////////                 ////////////
-////////////  PLAIN BUTTONS  ////////////
-////////////  PLAIN BUTTONS  ////////////
-////////////                 ////////////
-////////////                 ////////////
-let shiftBtn = document.querySelector('.shift-btn');
-
-////////////                 ////////////
-////////////                 ////////////
-////////////  BLACK BUTTONS  ////////////
-////////////  BLACK BUTTONS  ////////////
-////////////                 ////////////
-////////////                 ////////////
-let blackBtnGridLabels = [
+// Datasets
+let blackBtnLabels = [
     // 1st row
     ["𝒳\u207b\u00B9", "𝒳!"],
     ["nCr", "nPr"],
@@ -82,8 +37,34 @@ let blackBtnGridLabels = [
     [")","","X"],
     ["\u275c",";","Y"],
     ["M+","M\u2212","M","DT","\u23a3CL\u23a6"],
-]
-let calcWords = [
+],
+    realBtnObjLabels = [
+    // 1st row
+    ["7",""],
+    ["8",""],
+    ["9",""],
+    ["DEL","INS"],
+    ["AC","OFF"],
+    // 2nd row
+    ["4",""],
+    ["5",""],
+    ["6",""],
+    ["\u00d7",""],
+    ["\u00f7",""],
+    // 3rd row
+    ["1","","","","\u23a1S-SUM\u23a4"],
+    ["2","","","","\u23a1S-VAR\u23a4"],
+    ["3",""],
+    ["\u002b",""],
+    ["\u2212",""],
+    // 4th row
+    ["0","Rnd"],
+    [".","Ran#"],
+    ["EXP","\u03c0"],
+    ["Ans","DRG\u25b8"],
+    ["=","%"],
+],
+    words = [
     "5317738", // BELLIES
     "618", // BIG
     "", // hidden btn
@@ -109,8 +90,13 @@ let calcWords = [
     "31770", // OLLIE  
     "31220", // OZZIE
 ];
-// create object to store black button grid
-let blackBtnGrid = {
+
+// Storage
+let userInput = [];
+
+// BLACK BUTTONS //
+
+let blkBtnObj = {
     element: document.querySelector(".black-buttons-grid"),
     columns: 6,
     rows: 4,
@@ -119,66 +105,26 @@ let blackBtnGrid = {
     type: "button",
     class: "black-button",
     buttons: [],
-    labelValues: blackBtnGridLabels,
+    labelValues: blackBtnLabels,
     centerLabels: [],
     leftLabels: [],
     rightLabels: [],
+};
+createGrid(blkBtnObj);
+// assign attribute "value" to each button
+for (i=0;i<blkBtnObj.buttons.length;i++) {
+    blkBtnObj.buttons[i].setAttribute("value", i);
 }
-// create black button grid!
-createGrid(blackBtnGrid);
-// assign index attribute to each button
-for (i=0;i<blackBtnGrid.buttons.length;i++) {
-    blackBtnGrid.buttons[i].setAttribute("value", i);
-}
-// assign grid labels to black buttons.
-addLabels(blackBtnGrid);
+addLabels(blkBtnObj);
 
-function displayWord() {
-    inputDisplay.textContent = calcWords[this.value];
-    calculator.classList.add("calculator-rotate");
-}
-// hide middle 2 buttons on first row of blackBtnGrid
-blackBtnGrid.buttons[2].style.visibility = "hidden";
-blackBtnGrid.buttons[3].style.visibility = "hidden";
+// adjustments
+hideMiddleTwoBlkBtns();
 // custom assign labels for M+ button
-let dtLabel = document.createElement('h2');
-dtLabel.textContent = 'DT\u23a3CL\u23a6';
-dtLabel.classList.toggle('dt-label');
-blackBtnGrid.buttons[blackBtnGrid.buttons.length-1].appendChild(dtLabel);
+modifyMBtn();
 
-////////////                 ////////////
-////////////                 ////////////
-////////////  REAL BUTTONS   ////////////
-////////////  REAL BUTTONS   ////////////
-////////////                 ////////////
-////////////                 ////////////
-let realBtnGridLabels = [
-    // 1st row
-    ["7",""],
-    ["8",""],
-    ["9",""],
-    ["DEL","INS"],
-    ["AC","OFF"],
-    // 2nd row
-    ["4",""],
-    ["5",""],
-    ["6",""],
-    ["\u00d7",""],
-    ["\u00f7",""],
-    // 3rd row
-    ["1","","","","\u23a1S-SUM\u23a4"],
-    ["2","","","","\u23a1S-VAR\u23a4"],
-    ["3",""],
-    ["\u002b",""],
-    ["\u2212",""],
-    // 4th row
-    ["0","Rnd"],
-    [".","Ran#"],
-    ["EXP","\u03c0"],
-    ["Ans","DRG\u25b8"],
-    ["=","%"],
-];
-let realBtnGrid = {
+// REAL BUTTONS //
+
+let realBtnObj = {
     element: document.querySelector(".real-buttons-grid"),
     columns: 5,
     rows: 4,
@@ -187,71 +133,54 @@ let realBtnGrid = {
     type: "button",
     class: "real-button",
     buttons: [],
-    labelValues: realBtnGridLabels,
+    labelValues: realBtnObjLabels,
     centerLabels: [],
     leftLabels: [],
     rightLabels: [],
-}
-// create real button grid : )
-createGrid(realBtnGrid);
-// make background color pink for last 2 buttons on 1st row of real button grid
-realBtnGrid.buttons[3].style.backgroundColor = "var(--pink)";
-realBtnGrid.buttons[4].style.backgroundColor = "var(--pink)";
-// assign grid labels to real buttons!
-addLabels(realBtnGrid);
-// custom assign labels for 1 and 2 buttons (S-SUM and S-VAR labels)
-let sSumLabel = document.createElement('h2');
-sSumLabel.textContent = '\u23a1S-SUM\u23a4';
-sSumLabel.classList.toggle('s-label');
-realBtnGrid.buttons[10].appendChild(sSumLabel);
-let sVarLabel = document.createElement('h2');
-sVarLabel.textContent = '\u23a1S-VAR\u23a4';
-sVarLabel.classList.toggle('s-label');
-realBtnGrid.buttons[11].appendChild(sVarLabel);
+};
+createGrid(realBtnObj);
+addLabels(realBtnObj);
 
-/////////////                   //////////////
-/////////////                   //////////////
-/////////////  NUMBER  BUTTONS  //////////////
-/////////////  NUMBER  BUTTONS  //////////////
-/////////////                   //////////////
-/////////////                   //////////////
-// store number buttons in its own object
-let numberButtons = {
-    0: realBtnGrid.buttons[15],
-    1: realBtnGrid.buttons[10],
-    2: realBtnGrid.buttons[11],
-    3: realBtnGrid.buttons[12],
-    4: realBtnGrid.buttons[5],
-    5: realBtnGrid.buttons[6],
-    6: realBtnGrid.buttons[7],
-    7: realBtnGrid.buttons[0],
-    8: realBtnGrid.buttons[1],
-    9: realBtnGrid.buttons[2],
-    decimal: realBtnGrid.buttons[16],
-}
-// turn number buttons into array
-let numberButtonsArr = Object.values(numberButtons);
+// adjustments
+realBtnObj.buttons[3].style.backgroundColor = "var(--pink)"; // DEL btn
+realBtnObj.buttons[4].style.backgroundColor = "var(--pink)"; // AC btn
+// custom assign labels for num buttons "1" and "2" (S-SUM and S-VAR labels)
+addSSUMandSVARLabels();
 
-/////////////                  //////////////
-/////////////                  //////////////
-///////////// OPERATOR BUTTONS //////////////
-///////////// OPERATOR BUTTONS //////////////
-/////////////                  //////////////
-/////////////                  //////////////
-// store operator buttons in its own object
-let opButtons = {
-    del: realBtnGrid.buttons[3],
-    ac: realBtnGrid.buttons[4],
-    multiply: realBtnGrid.buttons[8],
-    divide: realBtnGrid.buttons[9],
-    add: realBtnGrid.buttons[13],
-    subtract: realBtnGrid.buttons[14],
-    exp: realBtnGrid.buttons[17],
-    ans: realBtnGrid.buttons[18],
-    equals: realBtnGrid.buttons[19],
+// NUMBER BUTTONS //
+
+// store number buttons and decimal button in object
+let numBtnObj = {
+    0: realBtnObj.buttons[15],
+    1: realBtnObj.buttons[10],
+    2: realBtnObj.buttons[11],
+    3: realBtnObj.buttons[12],
+    4: realBtnObj.buttons[5],
+    5: realBtnObj.buttons[6],
+    6: realBtnObj.buttons[7],
+    7: realBtnObj.buttons[0],
+    8: realBtnObj.buttons[1],
+    9: realBtnObj.buttons[2],
+    decimal: realBtnObj.buttons[16],
+}
+// num buttons object as array
+let numBtnObjArr = Object.values(numBtnObj);
+
+// OPERATOR BUTTONS //
+// store operator buttons in object
+let opBtnObj = {
+    del: realBtnObj.buttons[3],
+    ac: realBtnObj.buttons[4],
+    multiply: realBtnObj.buttons[8],
+    divide: realBtnObj.buttons[9],
+    add: realBtnObj.buttons[13],
+    subtract: realBtnObj.buttons[14],
+    exp: realBtnObj.buttons[17],
+    ans: realBtnObj.buttons[18],
+    equals: realBtnObj.buttons[19],
 }
 // for each opButton, add click listener that CALLS operate(op, a, b)
-// for (obj of Object.values(opButtons)) {
+// for (obj of Object.values(opBtnObj)) {
 //     obj.addEventListener("click", operate);
 // }
 
@@ -268,50 +197,70 @@ powerBtn.addEventListener("click", togglePower);
 // create function operate that takes an operator and 2 numbers and then calls one of the above functions on the numbers
 let storage = [];
 let finalResults = [];
-function operate()     {
-    // transform calculator back
-    calculator.classList.remove('calculator-rotate');
-    // IF 'DEL' or 'AC' clicked -> return out of function
+function modifyMBtn() {
+    let dtLabel = document.createElement('h2');
+    dtLabel.textContent = 'DT\u23a3CL\u23a6';
+    dtLabel.classList.toggle('dt-label');
+    blkBtnObj.buttons[blkBtnObj.buttons.length - 1].appendChild(dtLabel);
+}
+
+function hideMiddleTwoBlkBtns() {
+    blkBtnObj.buttons[2].style.visibility = "hidden";
+    blkBtnObj.buttons[3].style.visibility = "hidden";
+}
+
+function addSSUMandSVARLabels() {
+    let sSumLabel = document.createElement('h2');
+    sSumLabel.textContent = '\u23a1S-SUM\u23a4';
+    sSumLabel.classList.toggle('s-label');
+    realBtnObj.buttons[10].appendChild(sSumLabel);
+    let sVarLabel = document.createElement('h2');
+    sVarLabel.textContent = '\u23a1S-VAR\u23a4';
+    sVarLabel.classList.toggle('s-label');
+    realBtnObj.buttons[11].appendChild(sVarLabel);
+}
+
+function operate() {
+    rotateCalcBack();
+    // 'DEL' or 'AC' clicked: return out of function
     switch (this.value) {
-        // AC clicked -> clear all storage and return
         case "AC":
-            storage = [];
-            userInput = [];
-            inputDisplay.textContent = '';
-            outputDisplay.textContent = "0";
-            console.log(storage);
+            allClear();
             // transform h1 back to original
-            h1.classList.remove('h1-transform');
+            rotateH1Back();
             return;
-        // DEL clicked -> pop last user input and return
         case "DEL":
             userInput.pop();
             inputDisplay.textContent = userInput.join('');
             return;
-    } 
-    // IF '+', '−', '×', '÷', '=', 'EXP', or 'ANS' clicked -> make userInput a number and store as currentValue
-    // IF no user input, return
+    }
+    // No user input stored: return
     if (!userInput[0]) {
         return;
     }
-    let currentValue = +userInput.join('');
+
+    // '+', '−', '×', '÷', '=', 'EXP', or 'ANS' clicked: make userInput a number and store as newNum
+    let newNum = +userInput.join('');
     // clear userInput
     userInput = [];
-    // For INITIAL op button clicked (i.e. no result has been stored previously), store first item in storage array
+    // Prepare first number to be operated upon
     if (!storage[0]) {
         storage[0] = [];
-        // for each array inside storage, the first index will store user input numbers, the second index will store operators
-        storage[0][0] = currentValue; // user input number
+        // Eacy array in storage: index 0: numbers, index 1: operators
+        storage[0][0] = newNum; // user input number
         storage[0][1] = this.value; // operator
         console.log("first num and op stored in storage: " + storage[0]);
         outputDisplay.textContent = storage[storage.length-1][0];
         return;
     };
+
+    // OPERATE
     storage[storage.length] = [];
-    storage[storage.length-1][0] = currentValue; // number
-    storage[storage.length-1][1] = this.value; // op
-    console.log("before operation: " + storage);
-    switch (storage[storage.length-2][1]) {
+    storage[storage.length-1][0] = newNum; // number
+    storage[storage.length-1][1] = this.value; // operator
+    let prevOp = storage[storage.length-2][1]; // previously stored operator
+    console.log("before operation - storage: " + storage);
+    switch (prevOp) {
         case '+':
             storage[storage.length-1][0] = add(storage[storage.length-2][0], storage[storage.length-1][0]);
             break;
@@ -322,14 +271,16 @@ function operate()     {
             storage[storage.length-1][0] = multiply(storage[storage.length-2][0], storage[storage.length-1][0]);
             break;
         case '÷':
+            // divide by 0:
             if (storage[storage.length-1][0] == 0) {
-                storage = [];
-                inputDisplay.textContent = "";
-                outputDisplay.textContent = "0";
-                calculator.classList.add("calculator-flip");
+                allClear();
+                vanishCalc();
                 return;
             }
             storage[storage.length-1][0] = divide(storage[storage.length-2][0], storage[storage.length-1][0]);
+            break;
+        case 'EXP':
+            storage[storage.length-1][0] = exp(storage[storage.length-2][0], storage[storage.length-1][0]);
             break;
     }
     console.log("after operation: " + storage);
@@ -343,14 +294,43 @@ function operate()     {
         outputDisplay.textContent = finalResults[finalResults.length-1];
     } 
 }
+function vanishCalc() {
+    calculator.classList.add("calculator-vanish");
+}
+
+function allClear() {
+    storage = [];
+    userInput = [];
+    inputDisplay.textContent = '';
+    outputDisplay.textContent = "0";
+    console.log(storage);
+}
+
+function rotateH1Back() {
+    h1.classList.remove('h1-rotate');
+}
+
 function displayInput() {
-    // transform logo when display is populated.
-    h1.classList.add('h1-transform');
-    // transform calculator back
-    calculator.classList.remove('calculator-rotate');
+    rotateH1();
+    rotateCalcBack();
     userInput.push(this.value);
-    // apply display value to input display
     inputDisplay.textContent = userInput.join('');
+}
+function rotateH1() {
+    h1.classList.add('h1-rotate');
+}
+
+function rotateCalcBack() {
+    calculator.classList.remove('calculator-rotate');
+}
+
+function displayWord() {
+    inputDisplay.textContent = words[this.value];
+    rotate();
+}
+
+function rotateCalc() {
+    calculator.classList.add("calculator-rotate");
 }
 
 // make the calculator work. store the first number that is input into the calculator when user pressed an operator, and also save which operation has been chosen --> then operate() on them when the user presses the "=" key
@@ -368,7 +348,7 @@ function displayInput() {
 
 // EXTRA CREDIT: Add keyboard support!
 
-// create functions to add, subtract, multiply and divide.
+// OPERATOR FUNCTIONS
 function add(a,b) {
     return a+b;
 }
@@ -380,6 +360,9 @@ function multiply(a,b) {
 }
 function divide(a,b) {
     return a/b;
+}
+function exp(a,b) {
+    return (a) * (10**b);
 }
 // create function to create grid buttons
 function createGrid(obj) {
@@ -433,14 +416,14 @@ function togglePower() {
         // assign event listener to shift button
         shiftBtn.addEventListener("click", toggleZoom);
         // assign event listeners to each number button
-        numberButtonsArr.forEach((obj) => {
+        numBtnObjArr.forEach((obj) => {
             // play Sound
             obj.addEventListener("click", playSoundNum)
             // displayInput
             obj.addEventListener("click", displayInput);
         });
         // assign event listeners to each operator button
-        for (obj of Object.values(opButtons)) {
+        for (obj of Object.values(opBtnObj)) {
             // play Sound
             console.log(obj.value);
             if (obj.value != "DEL" && obj.value != "AC") {
@@ -450,8 +433,8 @@ function togglePower() {
             obj.addEventListener("click", operate);
         }
         // assign event listeners to each black button
-        for (i=0;i<blackBtnGrid.buttons.length;i++) {
-            blackBtnGrid.buttons[i].addEventListener("click", displayWord);
+        for (i=0;i<blkBtnObj.buttons.length;i++) {
+            blkBtnObj.buttons[i].addEventListener("click", displayWord);
         }
         // display 0 on output display
         outputDisplay.textContent = 0;
@@ -467,16 +450,16 @@ function togglePower() {
         // remove event listener to shift button
         shiftBtn.removeEventListener("click", toggleZoom);
         // remove event listeners to each number button
-        numberButtonsArr.forEach((obj) => {
+        numBtnObjArr.forEach((obj) => {
             obj.removeEventListener("click", displayInput);
         });
         // remove event listeners to each operator button
-        for (obj of Object.values(opButtons)) {
+        for (obj of Object.values(opBtnObj)) {
             obj.removeEventListener("click", operate);
         }
         // remove event listeners to each black button
-        for (i=0;i<blackBtnGrid.buttons.length;i++) {
-            blackBtnGrid.buttons[i].removeEventListener("click", displayWord);
+        for (i=0;i<blkBtnObj.buttons.length;i++) {
+            blkBtnObj.buttons[i].removeEventListener("click", displayWord);
         }
         // clear userInput
         userInput = [];
@@ -496,8 +479,23 @@ function togglePower() {
 }
 
 // remove event listener to shift button
+let zoomToggled = false;
 function toggleZoom() {
     calculator.classList.toggle("calculator-zoom");
+    if (!zoomToggled) {
+        zoomToggled = true;
+        const audio = document.querySelector(`audio[name="shiftup"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 0.8;
+        audio.play();
+    } else {
+        zoomToggled = false;
+        const audio = document.querySelector(`audio[name="shiftdn"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 0.7;
+        audio.play();
+    }
+
 }
 
 window.addEventListener('click', playSound);
