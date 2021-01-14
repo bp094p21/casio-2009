@@ -89,8 +89,9 @@ let blackBtnGridLabels = [
 let calcWords = [
     "5317738", // BELLIES
     "618", // BIG
+    "", // hidden btn
+    "", // hidden btn
     "5318008", // BOOBIES
-    "58008", // BOOBS
     "0.63", // EGO
     "0.70616", // GIGOLO
     "5318806", // GOBBIES
