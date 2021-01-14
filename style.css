@@ -1,19 +1,8 @@
-
-
-
-
-
-
-
-
-
-
 /*********                  **********/
 /*********                  **********/
 /*********   FONT IMPORTS   **********/
 /*********                  **********/
 /*********                  **********/
-
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
 @font-face {
     font-family: "Pendule Ornamental";
@@ -25,7 +14,6 @@
 /*********   FONTS          **********/
 /*********                  **********/
 /*********                  **********/
-
 :root {
     --mainfont: Helvetica, Arial, sans-serif;
 }
@@ -43,12 +31,12 @@ h1 {
 .model-number {
     font-family: serif;
 }
+
 /*********                  **********/
 /*********                  **********/
 /*********   BORDER BOX     **********/
 /*********                  **********/
 /*********                  **********/
-
 *,
 *::after,
 *::before {
@@ -62,7 +50,6 @@ h1 {
 /*********   COLORS         **********/
 /*********                  **********/
 /*********                  **********/
-
 :root {
     --navy: hsl(243deg, 16%, 35%);
     --grey: hsl(240deg, 8%, 75%);
@@ -73,7 +60,8 @@ h1 {
     --yellow: rgb(218, 176, 41);
     --solarblock: hsl(354deg, 20%, 19%);
     --solarcolumn: hsl(350deg, 32%, 14%);
-    --display: hsl(189deg, 21%, 87%);
+    --displayoff: black;
+    --displayon: hsl(189deg, 21%, 87%);
 }
 
 /*********                  **********/
@@ -134,23 +122,78 @@ body {
     background-color: rgb(166, 214, 169);
 } */
 
+/*********                  **********/
+/*********                  **********/
+/*********     BUTTONS      **********/
+/*********                  **********/
+/*********                  **********/
+button:hover {
+    opacity: 0.9;
+    cursor: pointer;
+}
+/* button:active {
+    border: none;
+} */
+button:focus {
+    outline: none;
+}
+
+/*********                  **********/
+/*********                  **********/
+/*********       BODY       **********/
+/*********                  **********/
+/*********                  **********/
+body {
+    height: 100vh;
+}
+
+/*********                  **********/
+/*********                  **********/
+/*********        H1        **********/
+/*********                  **********/
+/*********                  **********/
 h1 {
     text-align: center;
     height: 14vh;
     line-height: 14vh;
     font-size: 5rem;
+
+    transition: transform 2s cubic-bezier(.09,1.26,.28,1.06);
+}
+.h1-transform {
+    transform: rotate(180deg);
 }
 
+/*********                  **********/
+/*********                  **********/
+/*********       ROW        **********/
+/*********                  **********/
+/*********                  **********/
 .row {
     margin: auto;
     width: 40vh;
 }
 
+/*********                  **********/
+/*********                  **********/
+/*********   CALCULATOR     **********/
+/*********                  **********/
+/*********                  **********/
 .calculator {
     width: 40vh;
     height: 75vh;
     border-radius: 2rem;
     box-shadow: 0.1rem 0.2rem 0.5rem 0.3rem black;
+    transition: transform 2s cubic-bezier(.35,1.17,.92,1.16);
+}
+.calculator-rotate {
+    transform: rotate(900deg);
+}
+.calculator-flip {
+    transform: rotateX(630deg);
+}
+.calculator-zoom{
+    transform: scale(4) translateY(20vh);
 }
 
 /* HEAD SECTION */
@@ -229,11 +272,18 @@ h1 {
     height: 83%;
     width: 85%;
     margin: 0 auto;
-    background-color: var(--display);
+    transition: background-color;
+    /* OFF */
+    background-color: var(--displayoff);
 
     font-family: "Pendule Ornamental";
     border: 0.3rem inset var(--navy);
     box-shadow: 0 5px 3px 0 black;
+}
+.display-screen-on {
+    /* ON */
+    background-color: var(--displayon);
+    transition: background-color 1s cubic-bezier(0,1.45,.3,1.12);
 }
 .input-display {
     text-align: left;
@@ -296,7 +346,7 @@ h1 {
 .mode-clr-btn {
     margin-top: 9%;
 }
-.on-btn {
+.power-btn {
     margin-top: 7%;
 }
 
