@@ -226,10 +226,17 @@ function operate(e) {
             userInput.pop();
             elements.inputDisplay.textContent = userInput.join('');
             return;
+        case "Ans":
+            displayInput();
+            return;
     }
-    // No user input stored: return
-    if (!userInput[0]) {
+    // No user input stored or (there is nothing in input display field and operator is "="): return
+    if (!userInput[0] || (elements.inputDisplay.textContent == "" && this.value == "=")) {
         return;
+    }
+    // If user presses an operator after pressing "=" it will display the previous answer as the new input number to operate with.
+    if (!(this.value == "=")) {
+        displayInput();
     }
     // '+', '−', '×', '÷', '=', 'EXP', or 'ANS' clicked: make userInput a number and store as newNum
     let newNum = +userInput.join('');
@@ -254,6 +261,7 @@ function operate(e) {
     displayOutput();
     if (this.value == "=") {
         storeAnswer();
+        userInput.push(String(storage[storage.length - 1][0]));
         emptyStorage();
         clearInputDisplay();
         // elements.outputDisplay.textContent = answers[answers.length-1];
