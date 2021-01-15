@@ -29,7 +29,7 @@ const elements = {
     outputDisplay: document.querySelector('.output-display'),
     shiftBtn: document.querySelector('.shift-btn'),
     alphaBtn: document.querySelector('.alpha-btn'),
-    replayBtn: document.querySelector('.replay-btn'),
+    replayBtn: document.querySelector('#replay-btn'),
     modeBtn: document.querySelector('.mode-clr-btn'),
     powerBtn: document.querySelector('.power-btn'),
 }
@@ -122,6 +122,7 @@ const blackBtnLabels = [
 let userInput = [],
     storage = [],
     answers = [],
+    replayIndex = 0;
     zoomToggled = false;
     powerOn = false;
     calcUpright = true;
@@ -267,7 +268,7 @@ function operate(e) {
     function storeInitialNumAndOp() {
         storage[0] = [];
         // Each array in storage: index 0: numbers, index 1: operators
-        storage[0][0] = newNum; // user input number
+        storage[0][0] = +(String(newNum).substr(0, 15)); // user input number
         storage[0][1] = e.target.value; // operator
         console.log("first num and op stored in storage: " + storage[0]);
     }
@@ -278,23 +279,26 @@ function operate(e) {
     }
     function calculateAndStoreNum() {
         console.log("before calculation - storage: " + storage);
+        let answer;
         switch (prevOp) {
             case '+':
-                storage[storage.length - 1][0] = add(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                answer = add(storage[storage.length - 2][0], storage[storage.length - 1][0]);
                 break;
             case '−':
-                storage[storage.length - 1][0] = subtract(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                answer = subtract(storage[storage.length - 2][0], storage[storage.length - 1][0]);
                 break;
             case '×':
-                storage[storage.length - 1][0] = multiply(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                answer = multiply(storage[storage.length - 2][0], storage[storage.length - 1][0]);
                 break;
             case '÷':
-                storage[storage.length - 1][0] = divide(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                answer = divide(storage[storage.length - 2][0], storage[storage.length - 1][0]);
                 break;
             case 'EXP':
-                storage[storage.length - 1][0] = exp(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                answer = exp(storage[storage.length - 2][0], storage[storage.length - 1][0]);
                 break;
         }
+        answer = +(String(answer).substr(0, 15));
+        storage[storage.length - 1][0] = answer;
         console.log("after calculation: " + storage);
     }
     function storeAnswer() {
@@ -306,6 +310,10 @@ function operate(e) {
 
 // Data Functions
 function processInput() {
+    if (userInput.length == 23) {
+        playError();
+        return;
+    }
     if (this.value == "." && userInput[userInput.length-1] == ".") {
         playError();
         return;
@@ -336,6 +344,21 @@ function hardClear() {
     allClear();
     answers = [];
 }
+function replay() {
+    if (!answers[0]) {
+        playError();
+        return;
+    }
+    clearUserInput();
+    userInput.push(String(answers[replayIndex]));
+    displayInput();
+    playReplay();
+    if (replayIndex == answers.length-1) {
+        replayIndex = 0;
+    } else {
+        replayIndex++;
+    }
+}
 
 // Calculator Display Functions
 function toggleDisplayScreen() {
@@ -361,7 +384,39 @@ function outputDisplay0() {
 }
 
 // Audio Functions
-
+function playShift() {
+    if (!zoomToggled) {
+        zoomToggled = true;
+        const audio = document.querySelector(`audio[name="shiftup"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 0.8;
+        audio.play();
+    } else {
+        zoomToggled = false;
+        const audio = document.querySelector(`audio[name="shiftdn"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 0.7;
+        audio.play();
+    }
+}
+function playAlpha() {
+    const audio = document.querySelector(`audio[name="alpha"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playReplay() {
+    const audio = document.querySelector(`audio[name="replay"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playMode() {
+    const audio = document.querySelector(`audio[name="mode"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
 function playPower() {
     if (!powerOn) {
         const audio = document.querySelector(`audio[name="on"]`);
@@ -374,7 +429,6 @@ function playPower() {
         audio.play();
     }
 }
-
 function playWord() {
     if (calcUpright) {
         const audio = document.querySelector(`audio[name="spiral"]`);
@@ -523,21 +577,11 @@ function addSSUMandSVARLabels() {
 // DOM Transform Functions
 function toggleZoom() {
     elements.calculator.classList.toggle("calculator-zoom");
-    if (!zoomToggled) {
-        zoomToggled = true;
-        const audio = document.querySelector(`audio[name="shiftup"]`);
-        audio.currentTime = 0; // rewind to the start
-        audio.playbackRate = 0.8;
-        audio.play();
-    } else {
-        zoomToggled = false;
-        const audio = document.querySelector(`audio[name="shiftdn"]`);
-        audio.currentTime = 0; // rewind to the start
-        audio.playbackRate = 0.7;
-        audio.play();
-    }
+    playShift();
 
 }
+
+
 function rotateH1Upright() {
     elements.h1.classList.add('h1-rotate');
 }
@@ -570,6 +614,7 @@ function activatePowerBtn() {
 function togglePower() {
     if (!powerOn) { // Turn power on
         activateShiftBtn();
+        activateReplayBtn();
         activateBlkBtns();
         activateNumBtns();
         activateOpBtns();
@@ -578,6 +623,7 @@ function togglePower() {
         playPower();
     } else { // Turn power off
         deactivateShiftBtn();
+        deactivateReplayBtn();
         deactivateBlkBtns();
         deactivateNumBtns();
         deactivateOpBtns();
@@ -592,6 +638,12 @@ function activateShiftBtn() {
 }
 function deactivateShiftBtn() {
     elements.shiftBtn.removeEventListener("click", toggleZoom);
+}
+function activateReplayBtn() {
+    elements.replayBtn.addEventListener("click", replay);
+}
+function deactivateReplayBtn() {
+    elements.replayBtn.removeEventListener("click", replay);
 }
 function activateBlkBtns() {
     for (i = 0; i < blkBtnObj.buttons.length; i++) {

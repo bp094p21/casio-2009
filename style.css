@@ -268,7 +268,7 @@ h1 {
 }
 
 .display-screen {
-    padding: 0 2%;
+    padding: 0 1rem;
     height: 83%;
     width: 85%;
     margin: 0 auto;
@@ -287,12 +287,13 @@ h1 {
 }
 .input-display {
     text-align: left;
-    font-size: 3rem;
+    font-size: 3.2rem;
     height: 50%;
+    padding-top: 1rem;
 }
 .output-display {
     text-align: right;
-    font-size: 3.8rem;
+    font-size: 5rem;
     height: 50%;
 }
 /***********                   **************/
