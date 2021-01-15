@@ -1,14 +1,41 @@
-// Query Elements
-let h1 = document.querySelector('h1'),
-    calculator = document.querySelector('.calculator'),
-    displayScreen = document.querySelector('.display-screen'),
-    inputDisplay = document.querySelector('.input-display'),
-    outputDisplay = document.querySelector('.output-display'),
-    shiftBtn = document.querySelector('.shift-btn'),
-    powerBtn = document.querySelector('.power-btn');
+// make the calculator work. store the first number that is input into the calculator when user pressed an operator, and also save which operation has been chosen --> then operate() on them when the user presses the "=" key
+// 1. once operate() has been called, update the display with the 'solution' to the operation.
+// 2. this is the hardest part of the project. You need to figure out how to store all the values and call the operate function with them. Don’t feel bad if it takes you a while to figure out the logic.
+
+// fix bugs
+// 1. Users should be able to string together several operations and get the right answer, with each pair of numbers being evaluated at a time. For example, 12 + 7 - 5 * 3 = should yield 42. An example of the behavior we’re looking for would be this student solution. Your calculator should not evaluate more than a single pair of numbers at a time. If you enter a number then an operator and another number that calculation should be displayed if your next input is an operator. The result of the calculation should be used as the first number in your new calculation.
+// 2. You should round answers with long decimals so that they don’t overflow the screen.
+// 3. Pressing = before entering all of the numbers or an operator could cause problems!
+// 4. Pressing “clear” should wipe out any existing data.. make sure the user is really starting fresh after pressing “clear”
+// 5. Display a snarky error message if the user tries to divide by 0… don’t let it crash your calculator!
+
+// EXTRA CREDIT: Users can get floating point numbers if they do the math required to get one, but they can’t type them in yet. Add a . button and let users input decimals! Make sure you don’t let them type more than one though: 12.3.56.5. It is hard to do math on these numbers. (disable the decimal button if there’s already one in the display)
+
+// EXTRA CREDIT: Add keyboard support!
+
+// ██████╗  █████╗ ████████╗ █████╗ 
+// ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
+// ██║  ██║███████║   ██║   ███████║
+// ██║  ██║██╔══██║   ██║   ██╔══██║
+// ██████╔╝██║  ██║   ██║   ██║  ██║
+// ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
+                                 
+// Elements
+const elements = {
+    h1: document.querySelector('h1'),
+    calculator: document.querySelector('.calculator'),
+    displayScreen: document.querySelector('.display-screen'),
+    inputDisplay: document.querySelector('.input-display'),
+    outputDisplay: document.querySelector('.output-display'),
+    shiftBtn: document.querySelector('.shift-btn'),
+    alphaBtn: document.querySelector('.alpha-btn'),
+    replayBtn: document.querySelector('.replay-btn'),
+    modeBtn: document.querySelector('.mode-clr-btn'),
+    powerBtn: document.querySelector('.power-btn'),
+}
 
 // Datasets
-let blackBtnLabels = [
+const blackBtnLabels = [
     // 1st row
     ["𝒳\u207b\u00B9", "𝒳!"],
     ["nCr", "nPr"],
@@ -91,10 +118,27 @@ let blackBtnLabels = [
     "31220", // OZZIE
 ];
 
-// Storage
-let userInput = [];
+// Variables
+let userInput = [],
+    storage = [],
+    answers = [],
+    zoomToggled = false;
+    powerOn = false;
+    calcUpright = true;
+    displayScreenOn = false;
 
-// BLACK BUTTONS //
+// ██╗      ██████╗  ██████╗ ██╗ ██████╗
+// ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
+// ██║     ██║   ██║██║  ███╗██║██║     
+// ██║     ██║   ██║██║   ██║██║██║     
+// ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
+// ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
+                                         
+// Plain Buttons
+
+activatePowerBtn();
+
+// Black Buttons
 
 let blkBtnObj = {
     element: document.querySelector(".black-buttons-grid"),
@@ -110,19 +154,13 @@ let blkBtnObj = {
     leftLabels: [],
     rightLabels: [],
 };
-createGrid(blkBtnObj);
-// assign attribute "value" to each button
-for (i=0;i<blkBtnObj.buttons.length;i++) {
-    blkBtnObj.buttons[i].setAttribute("value", i);
-}
-addLabels(blkBtnObj);
-
-// adjustments
+createGrid(blkBtnObj); // create black button grid
+setArrayIndexAsElementValue(blkBtnObj.buttons); // assign element values
+addLabels(blkBtnObj); // add labels to black buttons
 hideMiddleTwoBlkBtns();
-// custom assign labels for M+ button
-modifyMBtn();
+modifyMBtn(); // custom assign label for M+ button
 
-// REAL BUTTONS //
+// REAL BUTTONS (NUM & OP)
 
 let realBtnObj = {
     element: document.querySelector(".real-buttons-grid"),
@@ -138,18 +176,8 @@ let realBtnObj = {
     leftLabels: [],
     rightLabels: [],
 };
-createGrid(realBtnObj);
-addLabels(realBtnObj);
-
-// adjustments
-realBtnObj.buttons[3].style.backgroundColor = "var(--pink)"; // DEL btn
-realBtnObj.buttons[4].style.backgroundColor = "var(--pink)"; // AC btn
-// custom assign labels for num buttons "1" and "2" (S-SUM and S-VAR labels)
-addSSUMandSVARLabels();
-
-// NUMBER BUTTONS //
-
-// store number buttons and decimal button in object
+createGrid(realBtnObj); // create real button grid
+addLabels(realBtnObj); // add labels to real buttons
 let numBtnObj = {
     0: realBtnObj.buttons[15],
     1: realBtnObj.buttons[10],
@@ -163,11 +191,6 @@ let numBtnObj = {
     9: realBtnObj.buttons[2],
     decimal: realBtnObj.buttons[16],
 }
-// num buttons object as array
-let numBtnObjArr = Object.values(numBtnObj);
-
-// OPERATOR BUTTONS //
-// store operator buttons in object
 let opBtnObj = {
     del: realBtnObj.buttons[3],
     ac: realBtnObj.buttons[4],
@@ -179,176 +202,240 @@ let opBtnObj = {
     ans: realBtnObj.buttons[18],
     equals: realBtnObj.buttons[19],
 }
-// for each opButton, add click listener that CALLS operate(op, a, b)
-// for (obj of Object.values(opBtnObj)) {
-//     obj.addEventListener("click", operate);
-// }
+let numBtnObjArr = Object.values(numBtnObj);
+styleBtnColor(opBtnObj.del, "pink");
+styleBtnColor(opBtnObj.ac, "pink");
+addSSUMandSVARLabels();
 
+// ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+// ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+// █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+// ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+// ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+// ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
-powerBtn.addEventListener("click", togglePower);
-/////////////                  //////////////
-/////////////                  //////////////
-/////////////    FUNCTIONS     //////////////
-/////////////    FUNCTIONS     //////////////
-/////////////                  //////////////
-/////////////                  //////////////
-
-
-// create function operate that takes an operator and 2 numbers and then calls one of the above functions on the numbers
-let storage = [];
-let finalResults = [];
-function modifyMBtn() {
-    let dtLabel = document.createElement('h2');
-    dtLabel.textContent = 'DT\u23a3CL\u23a6';
-    dtLabel.classList.toggle('dt-label');
-    blkBtnObj.buttons[blkBtnObj.buttons.length - 1].appendChild(dtLabel);
-}
-
-function hideMiddleTwoBlkBtns() {
-    blkBtnObj.buttons[2].style.visibility = "hidden";
-    blkBtnObj.buttons[3].style.visibility = "hidden";
-}
-
-function addSSUMandSVARLabels() {
-    let sSumLabel = document.createElement('h2');
-    sSumLabel.textContent = '\u23a1S-SUM\u23a4';
-    sSumLabel.classList.toggle('s-label');
-    realBtnObj.buttons[10].appendChild(sSumLabel);
-    let sVarLabel = document.createElement('h2');
-    sVarLabel.textContent = '\u23a1S-VAR\u23a4';
-    sVarLabel.classList.toggle('s-label');
-    realBtnObj.buttons[11].appendChild(sVarLabel);
-}
-
-function operate() {
-    rotateCalcBack();
+function operate(e) {
+    rotateCalcUpright();
     // 'DEL' or 'AC' clicked: return out of function
     switch (this.value) {
         case "AC":
             allClear();
-            // transform h1 back to original
-            rotateH1Back();
             return;
         case "DEL":
             userInput.pop();
-            inputDisplay.textContent = userInput.join('');
+            elements.inputDisplay.textContent = userInput.join('');
             return;
     }
     // No user input stored: return
     if (!userInput[0]) {
         return;
     }
-
     // '+', '−', '×', '÷', '=', 'EXP', or 'ANS' clicked: make userInput a number and store as newNum
     let newNum = +userInput.join('');
-    // clear userInput
-    userInput = [];
+    clearUserInput();
     // Prepare first number to be operated upon
     if (!storage[0]) {
-        storage[0] = [];
-        // Eacy array in storage: index 0: numbers, index 1: operators
-        storage[0][0] = newNum; // user input number
-        storage[0][1] = this.value; // operator
-        console.log("first num and op stored in storage: " + storage[0]);
-        outputDisplay.textContent = storage[storage.length-1][0];
+        storeInitialNumAndOp();
+        displayOutput();
         return;
     };
 
-    // OPERATE
-    storage[storage.length] = [];
-    storage[storage.length-1][0] = newNum; // number
-    storage[storage.length-1][1] = this.value; // operator
+    // CALCULATE AND STORE ANSWERS
+    storeNumAndOp();
     let prevOp = storage[storage.length-2][1]; // previously stored operator
-    console.log("before operation - storage: " + storage);
-    switch (prevOp) {
-        case '+':
-            storage[storage.length-1][0] = add(storage[storage.length-2][0], storage[storage.length-1][0]);
-            break;
-        case '−':
-            storage[storage.length-1][0] = subtract(storage[storage.length-2][0], storage[storage.length-1][0]);
-            break;
-        case '×':
-            storage[storage.length-1][0] = multiply(storage[storage.length-2][0], storage[storage.length-1][0]);
-            break;
-        case '÷':
-            // divide by 0:
-            if (storage[storage.length-1][0] == 0) {
-                allClear();
-                vanishCalc();
-                return;
-            }
-            storage[storage.length-1][0] = divide(storage[storage.length-2][0], storage[storage.length-1][0]);
-            break;
-        case 'EXP':
-            storage[storage.length-1][0] = exp(storage[storage.length-2][0], storage[storage.length-1][0]);
-            break;
+    // Divide by Zero error
+    if (storage[storage.length-1][0] == 0 && prevOp == '÷') {
+        allClear();
+        vanishCalc();
+        return;
     }
-    console.log("after operation: " + storage);
-    outputDisplay.textContent = storage[storage.length-1][0];
-    // TODO: clear storage on "=" but keep repeating the final result when user keeps pressing it
+    calculateAndStoreNum();
+    displayOutput();
     if (this.value == "=") {
-        finalResults.push(storage[storage.length-1][0]);
-        console.log("final results: " + finalResults);
-        storage = [];
-        inputDisplay.textContent = "";
-        outputDisplay.textContent = finalResults[finalResults.length-1];
-    } 
-}
-function vanishCalc() {
-    calculator.classList.add("calculator-vanish");
+        storeAnswer();
+        emptyStorage();
+        clearInputDisplay();
+        // elements.outputDisplay.textContent = answers[answers.length-1];
+    }
+
+    // Display Functions INNER
+    function displayOutput() {
+        elements.outputDisplay.textContent = storage[storage.length - 1][0];
+    }
+
+    // Data Functions INNER
+    function storeInitialNumAndOp() {
+        storage[0] = [];
+        // Each array in storage: index 0: numbers, index 1: operators
+        storage[0][0] = newNum; // user input number
+        storage[0][1] = e.target.value; // operator
+        console.log("first num and op stored in storage: " + storage[0]);
+    }
+    function storeNumAndOp() {
+        storage[storage.length] = [];
+        storage[storage.length - 1][0] = newNum; // number
+        storage[storage.length - 1][1] = e.target.value;
+    }
+    function calculateAndStoreNum() {
+        console.log("before calculation - storage: " + storage);
+        switch (prevOp) {
+            case '+':
+                storage[storage.length - 1][0] = add(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                break;
+            case '−':
+                storage[storage.length - 1][0] = subtract(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                break;
+            case '×':
+                storage[storage.length - 1][0] = multiply(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                break;
+            case '÷':
+                storage[storage.length - 1][0] = divide(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                break;
+            case 'EXP':
+                storage[storage.length - 1][0] = exp(storage[storage.length - 2][0], storage[storage.length - 1][0]);
+                break;
+        }
+        console.log("after calculation: " + storage);
+    }
+    function storeAnswer() {
+        answers.push(storage[storage.length - 1][0]);
+        console.log("final results: " + answers);
+    }
 }
 
-function allClear() {
-    storage = [];
+
+// Data Functions
+function processInput() {
+    if (this.value == "." && userInput[userInput.length-1] == ".") {
+        playError();
+        return;
+    } else if (this.value == "." && userInput.includes(".")) {
+        playError();
+        return;
+    } else {
+        userInput.push(this.value);
+        playNum();
+        displayInput();
+    }
+    
+}
+function clearUserInput() {
     userInput = [];
-    inputDisplay.textContent = '';
-    outputDisplay.textContent = "0";
-    console.log(storage);
+}
+function emptyStorage() {
+    storage = [];
+}
+function allClear() {
+    emptyStorage();
+    clearUserInput();
+    clearInputDisplay();
+    outputDisplay0();
+    rotateH1UpsideDown();
+}
+function hardClear() {
+    allClear();
+    answers = [];
 }
 
-function rotateH1Back() {
-    h1.classList.remove('h1-rotate');
+// Calculator Display Functions
+function toggleDisplayScreen() {
+    elements.displayScreen.classList.toggle("display-screen-on");
+    displayScreenOn = !displayScreenOn;
 }
-
 function displayInput() {
-    rotateH1();
-    rotateCalcBack();
-    userInput.push(this.value);
-    inputDisplay.textContent = userInput.join('');
+    rotateH1Upright();
+    rotateCalcUpright();
+    elements.inputDisplay.textContent = userInput.join('');
 }
-function rotateH1() {
-    h1.classList.add('h1-rotate');
-}
-
-function rotateCalcBack() {
-    calculator.classList.remove('calculator-rotate');
-}
-
 function displayWord() {
-    inputDisplay.textContent = words[this.value];
-    rotate();
+    allClear();
+    rotateH1Upright();
+    rotateCalcUpsideDown();
+    elements.inputDisplay.textContent = words[this.value];
+}
+function clearInputDisplay() {
+    elements.inputDisplay.textContent = '';
+}
+function outputDisplay0() {
+    elements.outputDisplay.textContent = "0";
 }
 
-function rotateCalc() {
-    calculator.classList.add("calculator-rotate");
+// Audio Functions
+
+function playPower() {
+    if (!powerOn) {
+        const audio = document.querySelector(`audio[name="on"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.play();
+    } else {
+        const audio = document.querySelector(`audio[name="off2"]`);
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 1;
+        audio.play();
+    }
 }
 
-// make the calculator work. store the first number that is input into the calculator when user pressed an operator, and also save which operation has been chosen --> then operate() on them when the user presses the "=" key
-// 1. once operate() has been called, update the display with the 'solution' to the operation.
-// 2. this is the hardest part of the project. You need to figure out how to store all the values and call the operate function with them. Don’t feel bad if it takes you a while to figure out the logic.
+function playWord() {
+    if (calcUpright) {
+        const audio = document.querySelector(`audio[name="spiral"]`);
+        if(!audio) return;
+        audio.currentTime = 0; // rewind to the start
+        audio.play();
+    } else {
+        const audio = document.querySelector(`audio[name="chime"]`);
+        if(!audio) return;
+        audio.currentTime = 0; // rewind to the start
+        audio.playbackRate = 1;
+        audio.play();
+    }
+    calcUpright = false;
+}
+function playNum() {
+    const audio = document.querySelector(`audio[name="num"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playOp() {
+    const audio = document.querySelector(`audio[name="op"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playDEL() {
+    let audio;
+    if (userInput[0]) {
+        console.log(`if statement. userInput: ${userInput}`)
+        audio = document.querySelector(`audio[name="DEL"]`);
+    } else {
+        console.log(`else statement. userInput: ${userInput}`)
+        audio = document.querySelector(`audio[name="error"]`);
+    }
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playAC() {
+    const audio = document.querySelector(`audio[name="AC"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+function playError() {
+    const audio = document.querySelector(`audio[name="error"]`);
+    if(!audio) return;
+    audio.currentTime = 0; // rewind to the start
+    audio.play();
+}
+// window.addEventListener('click', playSound);
+// function playSound(e) {
+//     const audio = document.querySelector(`audio[name="${e.target.value}"]`);
+//     if(!audio) return;
+//     audio.currentTime = 0; // rewind to the start
+//     audio.play();
+// }
 
-// fix bugs
-// 1. Users should be able to string together several operations and get the right answer, with each pair of numbers being evaluated at a time. For example, 12 + 7 - 5 * 3 = should yield 42. An example of the behavior we’re looking for would be this student solution. Your calculator should not evaluate more than a single pair of numbers at a time. If you enter a number then an operator and another number that calculation should be displayed if your next input is an operator. The result of the calculation should be used as the first number in your new calculation.
-// 2. You should round answers with long decimals so that they don’t overflow the screen.
-// 3. Pressing = before entering all of the numbers or an operator could cause problems!
-// 4. Pressing “clear” should wipe out any existing data.. make sure the user is really starting fresh after pressing “clear”
-// 5. Display a snarky error message if the user tries to divide by 0… don’t let it crash your calculator!
-
-// EXTRA CREDIT: Users can get floating point numbers if they do the math required to get one, but they can’t type them in yet. Add a . button and let users input decimals! Make sure you don’t let them type more than one though: 12.3.56.5. It is hard to do math on these numbers. (disable the decimal button if there’s already one in the display)
-
-// EXTRA CREDIT: Add keyboard support!
-
-// OPERATOR FUNCTIONS
+// Operator Functions
 function add(a,b) {
     return a+b;
 }
@@ -364,7 +451,8 @@ function divide(a,b) {
 function exp(a,b) {
     return (a) * (10**b);
 }
-// create function to create grid buttons
+
+// DOM Styling Functions
 function createGrid(obj) {
     obj.element.style.gridTemplateColumns = `repeat(${obj.columns}, 1fr)`;
     obj.element.style.gridTempalateRows = `repeat(${obj.rows}, 1fr)`;
@@ -378,7 +466,6 @@ function createGrid(obj) {
         obj.element.appendChild(obj.buttons[i]);
     }
 }
-// create function to create grid button labels
 function addLabels(obj) {
     for (i=0;i<obj.labelValues.length;i++) {
         obj.buttons[i].textContent = obj.labelValues[i][0];
@@ -409,79 +496,33 @@ function addLabels(obj) {
 
     }
 }
-
-function togglePower() {
-    
-    if (!powerBtn.hasAttribute("value")) {
-        // assign event listener to shift button
-        shiftBtn.addEventListener("click", toggleZoom);
-        // assign event listeners to each number button
-        numBtnObjArr.forEach((obj) => {
-            // play Sound
-            obj.addEventListener("click", playSoundNum)
-            // displayInput
-            obj.addEventListener("click", displayInput);
-        });
-        // assign event listeners to each operator button
-        for (obj of Object.values(opBtnObj)) {
-            // play Sound
-            console.log(obj.value);
-            if (obj.value != "DEL" && obj.value != "AC") {
-                obj.addEventListener("click", playSoundOp)
-            }
-            // operate
-            obj.addEventListener("click", operate);
-        }
-        // assign event listeners to each black button
-        for (i=0;i<blkBtnObj.buttons.length;i++) {
-            blkBtnObj.buttons[i].addEventListener("click", displayWord);
-        }
-        // display 0 on output display
-        outputDisplay.textContent = 0;
-        // turn display on
-        displayScreen.classList.toggle("display-screen-on");
-        // assign value to powerBtn
-        powerBtn.setAttribute("value", "on");
-        // play sound
-        const audio = document.querySelector(`audio[name="on"]`);
-        audio.currentTime = 0; // rewind to the start
-        audio.play();
-    } else {
-        // remove event listener to shift button
-        shiftBtn.removeEventListener("click", toggleZoom);
-        // remove event listeners to each number button
-        numBtnObjArr.forEach((obj) => {
-            obj.removeEventListener("click", displayInput);
-        });
-        // remove event listeners to each operator button
-        for (obj of Object.values(opBtnObj)) {
-            obj.removeEventListener("click", operate);
-        }
-        // remove event listeners to each black button
-        for (i=0;i<blkBtnObj.buttons.length;i++) {
-            blkBtnObj.buttons[i].removeEventListener("click", displayWord);
-        }
-        // clear userInput
-        userInput = [];
-        // display nothing on input display
-        inputDisplay.textContent = null;
-        // display nothing on output display
-        outputDisplay.textContent = null;
-        // turn display off
-        displayScreen.classList.toggle("display-screen-on");
-        // remove value from powerBtn
-        powerBtn.removeAttribute("value");
-        // play sound
-        const audio = document.querySelector(`audio[name="off2"]`);
-        audio.currentTime = 0; // rewind to the start
-        audio.play();
-    }
+function hideMiddleTwoBlkBtns() {
+    blkBtnObj.buttons[2].style.visibility = "hidden";
+    blkBtnObj.buttons[3].style.visibility = "hidden";
+}
+function modifyMBtn() {
+    let dtLabel = document.createElement('h2');
+    dtLabel.textContent = 'DT\u23a3CL\u23a6';
+    dtLabel.classList.toggle('dt-label');
+    blkBtnObj.buttons[blkBtnObj.buttons.length - 1].appendChild(dtLabel);
+}
+function styleBtnColor(btn,color) {
+    btn.style.backgroundColor = `var(--${color})`;
+}
+function addSSUMandSVARLabels() {
+    let sSumLabel = document.createElement('h2');
+    sSumLabel.textContent = '\u23a1S-SUM\u23a4';
+    sSumLabel.classList.toggle('s-label');
+    realBtnObj.buttons[10].appendChild(sSumLabel);
+    let sVarLabel = document.createElement('h2');
+    sVarLabel.textContent = '\u23a1S-VAR\u23a4';
+    sVarLabel.classList.toggle('s-label');
+    realBtnObj.buttons[11].appendChild(sVarLabel);
 }
 
-// remove event listener to shift button
-let zoomToggled = false;
+// DOM Transform Functions
 function toggleZoom() {
-    calculator.classList.toggle("calculator-zoom");
+    elements.calculator.classList.toggle("calculator-zoom");
     if (!zoomToggled) {
         zoomToggled = true;
         const audio = document.querySelector(`audio[name="shiftup"]`);
@@ -497,25 +538,100 @@ function toggleZoom() {
     }
 
 }
-
-window.addEventListener('click', playSound);
-function playSound(e) {
-    const audio = document.querySelector(`audio[name="${e.target.value}"]`);
-    if(!audio) return;
-    audio.currentTime = 0; // rewind to the start
-    audio.play();
-  }
-
-function playSoundNum(e) {
-    const audio = document.querySelector(`audio[name="num"]`);
-    if(!audio) return;
-    audio.currentTime = 0; // rewind to the start
-    audio.play();
+function rotateH1Upright() {
+    elements.h1.classList.add('h1-rotate');
+}
+function rotateH1UpsideDown() {
+    elements.h1.classList.remove('h1-rotate');
+}
+function rotateCalcUpsideDown() {
+    elements.calculator.classList.add("calculator-rotate");
+}
+function rotateCalcUpright() {
+    elements.calculator.classList.remove('calculator-rotate');
+    calcUpright = true;
+}
+function vanishCalc() {
+    elements.calculator.classList.add("calculator-vanish");
 }
 
-function playSoundOp(e) {
-    const audio = document.querySelector(`audio[name="op"]`);
-    if(!audio) return;
-    audio.currentTime = 0; // rewind to the start
-    audio.play();
+// Variable Functions
+function setArrayIndexAsElementValue(arr) {
+    for (i=0;i<arr.length;i++) {
+        arr[i].setAttribute("value", i);
+    }
+}
+
+// Event Listener Functions
+
+function activatePowerBtn() {
+    elements.powerBtn.addEventListener("click", togglePower);
+}
+function togglePower() {
+    if (!powerOn) { // Turn power on
+        activateShiftBtn();
+        activateBlkBtns();
+        activateNumBtns();
+        activateOpBtns();
+        allClear();
+        toggleDisplayScreen(); // ON
+        playPower();
+    } else { // Turn power off
+        deactivateShiftBtn();
+        deactivateBlkBtns();
+        deactivateNumBtns();
+        deactivateOpBtns();
+        allClear();
+        toggleDisplayScreen(); // OFF
+        playPower();
+    }
+    powerOn = !powerOn;
+}
+function activateShiftBtn() {
+    elements.shiftBtn.addEventListener("click", toggleZoom);
+}
+function deactivateShiftBtn() {
+    elements.shiftBtn.removeEventListener("click", toggleZoom);
+}
+function activateBlkBtns() {
+    for (i = 0; i < blkBtnObj.buttons.length; i++) {
+        blkBtnObj.buttons[i].addEventListener("click", displayWord);
+        blkBtnObj.buttons[i].addEventListener("click", playWord);
+    }
+}
+function deactivateBlkBtns() {
+    for (i = 0; i < blkBtnObj.buttons.length; i++) {
+        blkBtnObj.buttons[i].removeEventListener("click", displayWord);
+        blkBtnObj.buttons[i].removeEventListener("click", playWord);
+    }
+}
+function activateNumBtns() {
+    numBtnObjArr.forEach((obj) => {
+        obj.addEventListener("click", processInput);
+    });
+}
+function deactivateNumBtns() {
+    numBtnObjArr.forEach((obj) => {
+        obj.removeEventListener("click", processInput);
+    });
+}
+function activateOpBtns() {
+    for (obj of Object.values(opBtnObj)) {
+        if (obj.value != "DEL" && obj.value != "AC") {
+            obj.addEventListener("click", playOp); // activate sound
+        } else if (obj.value == "DEL") {
+            obj.addEventListener("click", playDEL);
+        } else if (obj.value == "AC") {
+            obj.addEventListener("click", playAC);
+        }
+        obj.addEventListener("click", operate);
+    }
+}
+function deactivateOpBtns() {
+    for (obj of Object.values(opBtnObj)) {
+        if (obj.value != "DEL" && obj.value != "AC") {
+            obj.removeEventListener("click", playOp); // activate sound
+        }
+        obj.removeEventListener("click", operate);
+    }
 }
