@@ -666,7 +666,7 @@ function activateAlphaBtn() {
     elements.alphaBtn.addEventListener("click", toggleAlpha);
 }
 function deactivateAlphaBtn() {
-    elements.alphaBtn.addEventListener("click", toggleAlpha);
+    elements.alphaBtn.removeEventListener("click", toggleAlpha);
 }
 function activateReplayBtn() {
     elements.replayBtn.addEventListener("click", replay);
@@ -712,6 +712,10 @@ function deactivateOpBtns() {
     for (obj of Object.values(opBtnObj)) {
         if (obj.value != "DEL" && obj.value != "AC") {
             obj.removeEventListener("click", playOp); // activate sound
+        } else if (obj.value == "DEL") {
+            obj.removeEventListener("click", playDEL);
+        } else if (obj.value == "AC") {
+            obj.removeEventListener("click", playAC);
         }
         obj.removeEventListener("click", operate);
     }
