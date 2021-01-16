@@ -1,16 +1,3 @@
-// make the calculator work. store the first number that is input into the calculator when user pressed an operator, and also save which operation has been chosen --> then operate() on them when the user presses the "=" key
-// 1. once operate() has been called, update the display with the 'solution' to the operation.
-// 2. this is the hardest part of the project. You need to figure out how to store all the values and call the operate function with them. Don’t feel bad if it takes you a while to figure out the logic.
-
-// fix bugs
-// 1. Users should be able to string together several operations and get the right answer, with each pair of numbers being evaluated at a time. For example, 12 + 7 - 5 * 3 = should yield 42. An example of the behavior we’re looking for would be this student solution. Your calculator should not evaluate more than a single pair of numbers at a time. If you enter a number then an operator and another number that calculation should be displayed if your next input is an operator. The result of the calculation should be used as the first number in your new calculation.
-// 2. You should round answers with long decimals so that they don’t overflow the screen.
-// 3. Pressing = before entering all of the numbers or an operator could cause problems!
-// 4. Pressing “clear” should wipe out any existing data.. make sure the user is really starting fresh after pressing “clear”
-// 5. Display a snarky error message if the user tries to divide by 0… don’t let it crash your calculator!
-
-// EXTRA CREDIT: Users can get floating point numbers if they do the math required to get one, but they can’t type them in yet. Add a . button and let users input decimals! Make sure you don’t let them type more than one though: 12.3.56.5. It is hard to do math on these numbers. (disable the decimal button if there’s already one in the display)
-
 // EXTRA CREDIT: Add keyboard support!
 
 // ██████╗  █████╗ ████████╗ █████╗ 
@@ -22,6 +9,7 @@
                                  
 // Elements
 const elements = {
+    root: document.querySelector(':root'),
     h1: document.querySelector('h1'),
     calculator: document.querySelector('.calculator'),
     displayScreen: document.querySelector('.display-screen'),
@@ -127,6 +115,7 @@ let userInput = [],
     powerOn = false;
     calcUpright = true;
     displayScreenOn = false;
+    prevAnswerAvailable = false;
 
 // ██╗      ██████╗  ██████╗ ██╗ ██████╗
 // ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
@@ -134,7 +123,14 @@ let userInput = [],
 // ██║     ██║   ██║██║   ██║██║██║     
 // ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
 // ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
-                                         
+
+window.addEventListener('keypress', listenForPower);
+function listenForPower(e) {
+    if (e.key == "o") {
+        togglePower();
+    }
+}
+
 // Plain Buttons
 
 activatePowerBtn();
@@ -204,8 +200,8 @@ let opBtnObj = {
     equals: realBtnObj.buttons[19],
 }
 let numBtnObjArr = Object.values(numBtnObj);
-styleBtnColor(opBtnObj.del, "pink");
-styleBtnColor(opBtnObj.ac, "pink");
+styleBtnColor(opBtnObj.del, "delbtnbg");
+styleBtnColor(opBtnObj.ac, "acbtnbg");
 addSSUMandSVARLabels();
 
 // ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -227,11 +223,18 @@ function operate(e) {
             elements.inputDisplay.textContent = userInput.join('');
             return;
         case "Ans":
-            displayInput();
+            clearUserInput();
+            if (answers[0]) {
+                userInput.push(answers[answers.length-1]);
+                displayInput();
+            }
             return;
     }
     // No user input stored or (there is nothing in input display field and operator is "="): return
     if (!userInput[0] || (elements.inputDisplay.textContent == "" && this.value == "=")) {
+        return;
+    }
+    if (this.value == "=" && storage.length == 0) {
         return;
     }
     // If user presses an operator after pressing "=" it will display the previous answer as the new input number to operate with.
@@ -264,6 +267,7 @@ function operate(e) {
         userInput.push(String(storage[storage.length - 1][0]));
         emptyStorage();
         clearInputDisplay();
+        prevAnswerAvailable = true;
         // elements.outputDisplay.textContent = answers[answers.length-1];
     }
 
@@ -318,7 +322,11 @@ function operate(e) {
 
 // Data Functions
 function processInput() {
-    if (userInput.length == 23) {
+    if (prevAnswerAvailable) {
+        userInput.shift();
+        prevAnswerAvailable = false;
+    }
+    if (userInput.length >= 23) {
         playError();
         return;
     }
@@ -458,7 +466,11 @@ function playNum() {
     audio.currentTime = 0; // rewind to the start
     audio.play();
 }
-function playOp() {
+function playOp(e) {
+    if (e.target.value == "=" && storage.length == 0) {
+        playError();
+        return;
+    }
     const audio = document.querySelector(`audio[name="op"]`);
     if(!audio) return;
     audio.currentTime = 0; // rewind to the start
@@ -489,13 +501,6 @@ function playError() {
     audio.currentTime = 0; // rewind to the start
     audio.play();
 }
-// window.addEventListener('click', playSound);
-// function playSound(e) {
-//     const audio = document.querySelector(`audio[name="${e.target.value}"]`);
-//     if(!audio) return;
-//     audio.currentTime = 0; // rewind to the start
-//     audio.play();
-// }
 
 // Operator Functions
 function add(a,b) {
@@ -588,7 +593,10 @@ function toggleZoom() {
     playShift();
 
 }
-
+function toggleAlpha() {
+    elements.root.classList.toggle("alpha");
+    playAlpha();
+}
 
 function rotateH1Upright() {
     elements.h1.classList.add('h1-rotate');
@@ -622,30 +630,43 @@ function activatePowerBtn() {
 function togglePower() {
     if (!powerOn) { // Turn power on
         activateShiftBtn();
+        activateAlphaBtn();
         activateReplayBtn();
         activateBlkBtns();
         activateNumBtns();
         activateOpBtns();
         allClear();
         toggleDisplayScreen(); // ON
+        elements.outputDisplay.textContent = "0";
         playPower();
+        activateKeyboard();
     } else { // Turn power off
         deactivateShiftBtn();
+        deactivateAlphaBtn();
         deactivateReplayBtn();
         deactivateBlkBtns();
         deactivateNumBtns();
         deactivateOpBtns();
-        allClear();
+        hardClear();
+        elements.outputDisplay.textContent = "";
         toggleDisplayScreen(); // OFF
         playPower();
+        deactivateKeyboard();
     }
     powerOn = !powerOn;
 }
+
 function activateShiftBtn() {
     elements.shiftBtn.addEventListener("click", toggleZoom);
 }
 function deactivateShiftBtn() {
     elements.shiftBtn.removeEventListener("click", toggleZoom);
+}
+function activateAlphaBtn() {
+    elements.alphaBtn.addEventListener("click", toggleAlpha);
+}
+function deactivateAlphaBtn() {
+    elements.alphaBtn.addEventListener("click", toggleAlpha);
 }
 function activateReplayBtn() {
     elements.replayBtn.addEventListener("click", replay);
@@ -694,4 +715,57 @@ function deactivateOpBtns() {
         }
         obj.removeEventListener("click", operate);
     }
+}
+function activateKeyboard() {
+    window.addEventListener('keypress', processKeypress);
+}
+function deactivateKeyboard() {
+    window.removeEventListener('keypress', processKeypress);
+}
+
+//
+function processKeypress(e) {
+    console.log((0 <= e.key && e.key <= 9))
+    if (0 <= e.key && e.key <= 9) {
+        numBtnObj[e.key].click();
+    } else if (e.key == ".") {
+        numBtnObj.decimal.click();
+    } else {
+        switch (e.key) {
+            case "x":
+                opBtnObj.del.click();
+                break;
+            case "+":
+                opBtnObj.add.click();
+                break;
+            case "-":
+                opBtnObj.subtract.click();
+                break;
+            case "/":
+                opBtnObj.divide.click();
+                break;
+            case "*":
+                opBtnObj.multiply.click();
+                break;
+            case "Enter":
+                opBtnObj.equals.click();
+                break;
+            case "=":
+                opBtnObj.equals.click();
+                break;
+            case "z":
+                elements.shiftBtn.click();
+                break;
+            case "c":
+                opBtnObj.ac.click();
+                break;
+            case "^":
+                opBtnObj.exp.click();
+                break;
+            case "a":
+                elements.alphaBtn.click();
+                break;
+        }
+    }
+    
 }

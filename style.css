@@ -51,17 +51,85 @@ h1 {
 /*********                  **********/
 /*********                  **********/
 :root {
-    --navy: hsl(243deg, 16%, 35%);
-    --grey: hsl(240deg, 8%, 75%);
-    --pink: rgb(216, 140, 160);
-    --darkpink: hsl(342deg, 38%, 54%);
-    --black: hsl(244deg, 12%, 24%);
-    --blue: hsl(214deg, 37%, 51%);
-    --yellow: rgb(218, 176, 41);
+    /* --paper: rgb(212, 204, 193); */
+    --bodybg: rgb(212, 204, 193);
+    /* --white: white; */
+    --blkbtncolor: white;
+    --realbtncolor: white;
+    /* --navy: hsl(243deg, 16%, 35%); */
+    --calcbg: hsl(243deg, 16%, 35%);
+    --solarpanelborder: hsl(243deg, 16%, 35%);
+    --displayscreenborder: hsl(243deg, 16%, 35%);
+    /* --grey: hsl(240deg, 8%, 75%); */
+    --logocolor: hsl(240deg, 8%, 75%);
+    --modelnumbercolor: hsl(240deg, 8%, 75%);
+    --twowaypowercolor: hsl(240deg, 8%, 75%);
+    --replaybtnborder: hsl(240deg, 8%, 75%);
+    --replaybtncolor: hsl(240deg, 8%, 75%);
+    --modehcolor: hsl(240deg, 8%, 75%);
+    --realbuttonbg: hsl(240deg, 8%, 75%);
+    /* --darkpink: hsl(342deg, 38%, 54%); */
+    --distinctioncolor: hsl(342deg, 38%, 54%);
+    --alphahcolor: hsl(342deg, 38%, 54%);
+    /* --lightpink: rgb(219, 135, 160); */
+    --delbtnbg: rgb(219, 135, 160);
+    --acbtnbg: rgb(219, 135, 160);
+    /* --darkgrey: hsl(244deg, 12%, 24%); */
+    --calcboxshadow: hsl(244deg, 12%, 24%);
+    --displayscreenboxshadow: hsl(244deg, 12%, 24%);
+    --blackbtnbg: hsl(244deg, 12%, 24%);
+    /* --blue: hsl(214deg, 37%, 51%); */
+    --dtlabelcolor: hsl(214deg, 37%, 51%);
+    --slabelcolor: hsl(214deg, 37%, 51%);
+    /* --yellow: rgb(218, 176, 41); */
+    --shifthcolor: rgb(218, 176, 41);
+    /* --maroon: hsl(354deg, 20%, 19%); */
+    --solarblock: hsl(354deg, 20%, 19%);
+    --solarcolumn: hsl(350deg, 32%, 14%);
+    /* --black: black; */
+    --displayoff: black;
+    /* --azurewhite: hsl(189deg, 21%, 87%); */
+    --displayon: hsl(189deg, 21%, 87%);
+    --replaybtnbg: rgb(240, 240, 240);
+    --plainbtnbg: rgb(239, 239, 239);
+    --inputcolor: black;
+    --outputcolor: black;
+    --h1color: black;
+}
+
+:root.alpha {
+    --bodybg: black;
+    --blkbtncolor: rgb(0, 0, 0);
+    --realbtncolor: rgb(0, 0, 0);
+    --calcbg: rgb(255, 255, 255);
+    --solarpanelborder: rgb(88, 88, 88);
+    --displayscreenborder: rgb(92, 92, 92);
+    --logocolor: rgb(15, 15, 15);
+    --modelnumbercolor: hsl(240deg, 8%, 75%);
+    --twowaypowercolor: hsl(240deg, 8%, 75%);
+    --replaybtnborder: hsl(240deg, 8%, 75%);
+    --replaybtncolor: rgb(225, 225, 226);
+    --replaybtnbg: rgb(39, 39, 39);
+    --modehcolor: rgb(88, 88, 88);
+    --realbuttonbg: rgba(133, 133, 133, 0.116);
+    --distinctioncolor: rgb(36, 36, 36);
+    --alphahcolor: rgb(126, 126, 126);
+    --delbtnbg: rgb(255, 255, 255);
+    --acbtnbg: rgb(255, 255, 255);
+    --calcboxshadow: rgb(214, 214, 214);
+    --displayscreenboxshadow: rgb(185, 185, 185);
+    --blkbtnbg: rgba(0, 0, 0, 0.267);
+    --dtlabelcolor: rgb(49, 49, 49);
+    --slabelcolor: rgb(85, 85, 85);
+    --shifthcolor: rgb(153, 153, 153);
     --solarblock: hsl(354deg, 20%, 19%);
     --solarcolumn: hsl(350deg, 32%, 14%);
     --displayoff: black;
-    --displayon: hsl(189deg, 21%, 87%);
+    --displayon: rgb(0, 0, 0);
+    --plainbtnbg: rgb(59, 59, 59);
+    --inputcolor: white;
+    --outputcolor: white;
+    --h1color: white;
 }
 
 /*********                  **********/
@@ -70,10 +138,10 @@ h1 {
 /*********                  **********/
 /*********                  **********/
 body {
-    background-color: rgb(212, 204, 193);
+    background-color: var(--bodybg);
 }
 .calculator {
-    background-color: var(--navy);
+    background-color: var(--calcbg);
 }
 .head-section,
 .display-section,
@@ -157,6 +225,7 @@ h1 {
     height: 14vh;
     line-height: 14vh;
     font-size: 5rem;
+    color: var(--h1color);
 
     transition: transform 2s cubic-bezier(.09,1.26,.28,1.06);
 }
@@ -183,7 +252,7 @@ h1 {
     width: 40vh;
     height: 75vh;
     border-radius: 2rem;
-    box-shadow: 0.1rem 0.2rem 0.5rem 0.3rem black;
+    box-shadow: 0.1rem 0.2rem 0.5rem 0.3rem var(--calcboxshadow);
     transition: transform 2s cubic-bezier(.35,1.17,.92,1.16);
 }
 .calculator-rotate {
@@ -214,7 +283,7 @@ h1 {
     font-size: 1.7rem;
     font-weight: bold;
     letter-spacing: 0.1rem;
-    color: var(--grey);
+    color: var(--logocolor);
     height: 65%;
     padding-top: 15%;
 }
@@ -223,19 +292,19 @@ h1 {
     font-weight: 100;
     font-style: italic;
     letter-spacing: 0.1rem;
-    color: var(--grey);
+    color: var(--modelnumbercolor);
     margin-bottom: 0.3rem;
 }
 .distinction {
     font-family: 'Audiowide', cursive;
     font-size: 1.25rem;
     letter-spacing: 0.15rem;
-    color: var(--darkpink);
+    color: var(--distinctioncolor);
 }
 /* solar-panel */
 .solar-panel {
     background-color: var(--solarblock);
-    border: 0.3rem inset var(--navy);
+    border: 0.3rem inset var(--solarpanelborder);
     width: 50%;
     height: 65%;
     margin: auto;
@@ -256,7 +325,7 @@ h1 {
     position: absolute;
     bottom: -30%;
     right: -2%;
-    color: var(--grey);
+    color: var(--twowaypowercolor);
 }
 /*******************/
 /*******************/
@@ -277,8 +346,8 @@ h1 {
     background-color: var(--displayoff);
 
     font-family: "Pendule Ornamental";
-    border: 0.3rem inset var(--navy);
-    box-shadow: 0 5px 3px 0 black;
+    border: 0.3rem inset var(--displayscreenborder);
+    box-shadow: 0 5px 3px 0 var(--displayscreenboxshadow);
 }
 .display-screen-on {
     /* ON */
@@ -290,11 +359,13 @@ h1 {
     font-size: 3.2rem;
     height: 50%;
     padding-top: 1rem;
+    color: var(--inputcolor);
 }
 .output-display {
     text-align: right;
     font-size: 5rem;
     height: 50%;
+    color: var(--outputcolor);
 }
 /***********                   **************/
 /***********                   **************/
@@ -323,7 +394,7 @@ h1 {
     margin-top: 5%;
     border-color: transparent;
     border-radius: 5rem;
-
+    background-color: var(--plainbtnbg);
     position: relative;
 }
 .shift-btn {
@@ -340,9 +411,10 @@ h1 {
     width: 25%;
     border: 1px;
     border-style: solid;
-    border-color: var(--grey);
+    border-color: var(--replaybtnborder);
     border-radius: 7rem 7rem 10rem 10rem;
-    color: var(--grey);
+    color: var(--replaybtncolor);
+    background-color: var(--replaybtnbg);
 }
 .mode-clr-btn {
     margin-top: 9%;
@@ -362,7 +434,7 @@ h1 {
     position: absolute;
     font-size: 0.8rem;
     bottom: -1.4rem;
-    color: var(--blue);
+    color: var(--dtlabelcolor);
     left: 50%;
     transform: translateX(-50%);
 }
@@ -371,19 +443,19 @@ h1 {
     width: 100%;
     font-size: 0.8rem;
     top: -1.2rem;
-    color: var(--blue);
+    color: var(--slabelcolor);
     left: 50%;
     transform: translateX(-50%);
 }
 .shift-h {
-    color: var(--yellow);
+    color: var(--shifthcolor);
 }
 .alpha-h {
     font-weight: bold;
-    color: var(--darkpink);
+    color: var(--alphahcolor);
 }
 .mode-h {
-    color: var(--grey);
+    color: var(--modehcolor);
 }
 .center-label {
     left: 50%;
@@ -424,8 +496,8 @@ h1 {
     margin: 0;
 
 
-    background-color: var(--black);
-    color: white;
+    background-color: var(--blkbtnbg);
+    color: var(--blkbtncolor);
 }
 
 /***********************************/
@@ -452,6 +524,6 @@ h1 {
     line-height: 1.4rem;
 
     border-radius: 1.2rem 1.2rem 1.5rem 1.5rem;
-    background-color: var(--grey);
-    color: white;
+    background-color: var(--realbuttonbg);
+    color: var(--realbtncolor);
 }
